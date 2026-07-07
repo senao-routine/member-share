@@ -219,6 +219,34 @@
   }
   .flow .arrow { color: var(--muted); }
 
+  /* コピー可能なプロンプトボックス */
+  .copybox { position: relative; }
+  .copy-btn {
+    position: absolute;
+    top: 12px; right: 12px;
+    background: var(--accent);
+    color: #1a1206;
+    border: none;
+    border-radius: 8px;
+    font-family: inherit;
+    font-weight: 700;
+    font-size: 14px;
+    padding: 8px 16px;
+    cursor: pointer;
+    transition: background .15s, transform .08s;
+    z-index: 2;
+  }
+  .copy-btn:hover { background: #f59e0b; }
+  .copy-btn:active { transform: scale(0.96); }
+  .copy-btn.copied { background: var(--green); color: #06210d; }
+  pre.prompt {
+    max-height: 620px;
+    overflow: auto;
+    padding-top: 54px;
+    margin-top: 0;
+  }
+  pre.prompt code { white-space: pre; color: #c9d5e3; font-size: 14px; line-height: 1.7; }
+
   footer {
     text-align: center;
     color: var(--muted);
@@ -238,7 +266,7 @@
   <header>
     <div class="badge">Claude Code 設定紹介</div>
     <h1><span class="file">CLAUDE.md</span> の中身、全部見せます</h1>
-    <p class="sub">グローバル設定（全プロジェクト共通）と プロジェクト設定 の2層構成</p>
+    <p class="sub">全プロジェクト共通のモデル運用方針と、そのままコピーして使える設定プロンプト</p>
   </header>
 
   <div class="tabs">
@@ -246,9 +274,9 @@
       🌐 グローバル設定
       <small>~/.claude/CLAUDE.md</small>
     </button>
-    <button class="tab" data-pane="project">
-      📦 プロジェクト設定
-      <small>xpostSample/CLAUDE.md</small>
+    <button class="tab" data-pane="prompt">
+      📋 設定プロンプト
+      <small>コピーしてそのまま使える</small>
     </button>
   </div>
 
@@ -339,66 +367,109 @@
     </div>
   </div>
 
-  <!-- ============ プロジェクト設定 ============ -->
-  <div class="pane" id="pane-project">
+  <!-- ============ 設定プロンプト ============ -->
+  <div class="pane" id="pane-prompt">
     <div class="filebar">
       <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
-      <span class="path">xpostSample/CLAUDE.md</span>
+      <span class="path">~/.claude/CLAUDE.md</span>
     </div>
     <div class="content">
 
       <section>
-        <h2><span class="icon">📦</span>プロダクトの定義</h2>
+        <h2><span class="icon">📋</span>そのまま使える設定プロンプト</h2>
         <div class="lead">
-          Claude Code × Typefully 自動投稿スキルパック（配布用プロダクト）。<br>
-          <strong>プロンプト資産（.md スキル）が製品本体</strong>。コードではなくスキルの文面・README・設定テンプレの品質がプロダクト品質そのもの。
+          左のタブで紹介したモデル運用方針を、<strong>あなたの <code>~/.claude/CLAUDE.md</code> にそのまま貼り付けるだけ</strong>で同じ運用ができます。<br>
+          下のボタンで全文コピー → <code>~/.claude/CLAUDE.md</code> に追記してください。
         </div>
-      </section>
+        <div class="copybox">
+          <button class="copy-btn" id="copyBtn">📋 プロンプトをコピー</button>
+          <pre class="prompt"><code id="promptText"># モデル運用方針（個人・全プロジェクト共通）
 
-      <section>
-        <h2><span class="icon">✅</span>検証（配布ファイル編集後は必ず実行）</h2>
-        <pre><code>bash scripts/validate.sh</code></pre>
-        <ul>
-          <li>① 設定テンプレの JSON 妥当性</li>
-          <li>② root ↔ <code>.claude/commands/</code> の同期チェック</li>
-          <li>③ 個人情報リーク（禁止語）チェック</li>
-        </ul>
-        <p><code>.claude/settings.json</code> の <strong>PostToolUse hook</strong> により、配布ファイル編集時は<strong>自動実行</strong>される。</p>
-      </section>
+クレジット消費を抑えつつ品質を確保するため、タスクの性質に応じて
+モデルとワークフローを使い分ける。Claude Fable 5 は「真価を発揮する場面」に
+限定し、軽量・定型的な作業は Sonnet 5、それ以外の日常的な作業は Opus 4.8
+を既定とする。
 
-      <section>
-        <h2><span class="icon">📜</span>規約</h2>
-        <ul>
-          <li>root の <code>x-post.md</code> / <code>x-research.md</code> / <code>README.md</code> が<strong>配布マスター</strong>。<code>.claude/commands/</code> は動作確認用ミラー</li>
-          <li>配布物に<strong>個人情報を含めない</strong>。個人用の拡張は <code>personal/</code>（配布対象外）へ</li>
-          <li>日付・スケジュール例をハードコードしない（相対表現にする）</li>
-          <li>Typefully API の記述は<strong>実機検証済み仕様</strong>に合わせる（Bearer 認証、2段階メディアアップロード、<code>publish_at</code> は UTC 記法必須 など）</li>
-        </ul>
-      </section>
+## 既定モデル
+- 既定は **Opus 4.8**。
+- 判断が必要な通常タスク、軽微でも判断に迷う作業は Opus 4.8 で処理する。
 
-      <section>
-        <h2><span class="icon">🔁</span>日次ループ運用</h2>
-        <ul>
-          <li><code>/todo-next</code> — TODO の先頭タスクを1件実行 → 完了条件を検証 → チェック → validate → commit まで（1日1回が目安）</li>
-          <li>タスクには必ず<strong>【完了条件】</strong>を付ける</li>
-          <li>安定してきたら <code>/loop</code> や schedule（cron）への昇格を検討</li>
-        </ul>
-      </section>
+## 軽量・定型タスク（Sonnet 5）
+- 明確に軽量・定型的な作業は **Sonnet 5**（`claude-sonnet-5`）を使い、
+  クレジット消費を抑える。
+- すぐ結果が欲しい質問、CRUD 実装、軽微な修正、単純な置換などが該当する。
 
-      <section>
-        <h2><span class="icon">🚀</span>リリースチェックリスト</h2>
-        <ul class="checklist">
-          <li><code>bash scripts/validate.sh</code> が green</li>
-          <li>README を新規ユーザー視点で通し読み（コピペで完走できるか）</li>
-          <li>CHANGELOG 更新・バージョンタグ（git tag vX.Y.Z）</li>
-          <li>配布 zip 生成（<code>personal/</code>・<code>settings.json</code>・<code>scripts/</code> は除外）</li>
-        </ul>
+## Fable 5 を使う場面（重いタスク限定）
+以下に該当する「重いタスク」のときだけ Fable 5 を使う。
+- アーキテクチャ設計・大規模な設計判断
+- コードベース全体の監査／大規模移行・modernization
+- 複雑なバグの根本原因調査
+- 長時間の自走を要する作業
+
+上記に該当しないタスクで Fable 5 を起動しない。
+
+## ultracode（動的ワークフロー）の方針
+- セッション全体を ultracode にはしない（全タスクにワークフロー層が
+  適用され消費が膨らむため）。
+- 動的ワークフローが本当に有効な単発タスクのときだけ、
+  プロンプトに `ultracode` キーワードを付けて起動する。
+- ワークフロー完了後は通常作業に戻す。
+
+## 委譲ルール
+- 「重いタスク」に該当する作業は、専用サブエージェント `heavy-task`
+  （model: claude-fable-5）に委譲してから実行する。
+- メインセッションは **Opus 4.8 のまま維持**し、Fable 5 は必要時のみ呼び出す。
+
+# 開発方針: ハーネスエンジニアリング（全プロジェクト共通の原則）
+
+「モデルの記憶や注意力」ではなく「環境と仕組み」に品質を担保させる。
+コードを書く前に、フィードバックが自動で返ってくる状態を先に作る。
+
+- 新規プロジェクトや新機能の着手時は、実装より先に検証ループ
+  （テスト・リンタ・型チェック・ビルド・起動確認の手順）を整備する。
+  検証手段がないまま実装を積み上げない。
+- セッション内で同じ指示・訂正が繰り返されていると気づいたら、
+  その場で従うだけでなく、CLAUDE.md／スキル／hooks／settings への
+  恒久化を提案する。
+- 環境の摩擦（曖昧な手順、壊れたビルド、毎回出る権限プロンプト、
+  手作業前提のフロー）を見つけたら、回避せず環境側の修正を優先する。
+
+## プラン立案時の必須ルール（plan mode／要件定義時）
+
+プランを作成するときは、機能実装のステップに加えて、必ず以下を
+独立したステップとしてプランに含める。
+
+1. ハーネス整備フェーズ（実装より前に置く）
+   - 検証ループの構築: テスト・リンタ・型チェック・起動確認の
+     コマンドを決め、動く状態にする。
+   - `.claude/settings.json` の作成・更新: 権限 allowlist、
+     必要な hooks（例: 編集後の自動リンタ／テスト実行）を設定する。
+   - CLAUDE.md の作成・更新: 検証コマンドと規約を記録する。
+2. ループ設計フェーズ（運用があるプロジェクトの場合）
+   - デプロイ・動作確認・ログ観測の手順を定義し、繰り返し作業は
+     自動化（hooks／cron／スクリプト）の対象として明記する。
+
+# 運用方針: ループエンジニアリング（運用・改善タスク共通の原則）
+
+運用・改善の作業は「実行 → 観測 → 修正」のループとして設計する。
+1回きりの修正で完結させない。
+
+- 修正や変更を入れるときは、その効果を観測する手段（ログ、メトリクス、
+  検証コマンド、確認手順）をセットで用意・明記する。
+- 同じ形の作業が繰り返されるなら、自動化（hooks、cron／スケジュール
+  実行、/loop、スクリプト化）への昇格を検討し、提案する。
+- 失敗や手戻りが起きたら、個別対処に加えて「ループのどこが欠けていたか
+  （観測不足か、検証不足か、手順の曖昧さか）」を一言添える。</code></pre>
+        </div>
+        <p style="color:var(--muted);font-size:14.5px;">
+          ※ <code>heavy-task</code> は Fable 5 を割り当てた自作サブエージェント名です。ご自身の環境に合わせて名前・モデルを変えてお使いください。
+        </p>
       </section>
 
     </div>
   </div>
 
-  <footer>CLAUDE.md Preview — YouTube 紹介用</footer>
+  <footer>CLAUDE.md Preview — メンバー限定配布</footer>
 </div>
 
 <script>
@@ -410,6 +481,31 @@
       document.getElementById('pane-' + tab.dataset.pane).classList.add('active');
     });
   });
+
+  // 設定プロンプトのコピー
+  const copyBtn = document.getElementById('copyBtn');
+  if (copyBtn) {
+    copyBtn.addEventListener('click', async () => {
+      const text = document.getElementById('promptText').innerText;
+      try {
+        await navigator.clipboard.writeText(text);
+      } catch (e) {
+        const range = document.createRange();
+        range.selectNode(document.getElementById('promptText'));
+        const sel = window.getSelection();
+        sel.removeAllRanges();
+        sel.addRange(range);
+        try { document.execCommand('copy'); } catch (_) {}
+        sel.removeAllRanges();
+      }
+      copyBtn.textContent = '✓ コピーしました';
+      copyBtn.classList.add('copied');
+      setTimeout(() => {
+        copyBtn.textContent = '📋 プロンプトをコピー';
+        copyBtn.classList.remove('copied');
+      }, 2000);
+    });
+  }
 </script>
 </body>
 </html>

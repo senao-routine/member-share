@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CLAUDE.md 設定プレビュー</title>
+<style>
+  :root {
+    --bg: #0d1117;
+    --panel: #161b22;
+    --panel-2: #1c2230;
+    --border: #2d333b;
+    --text: #e6edf3;
+    --muted: #9198a1;
+    --accent: #d97706;
+    --accent-soft: rgba(217, 119, 6, 0.15);
+    --blue: #58a6ff;
+    --green: #3fb950;
+    --code-bg: #0a0e14;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: "Hiragino Sans", "Noto Sans JP", "Yu Gothic", -apple-system, sans-serif;
+    line-height: 1.8;
+    font-size: 17px;
+  }
+  .container { max-width: 960px; margin: 0 auto; padding: 32px 24px 80px; }
+
+  /* ヘッダー */
+  header {
+    text-align: center;
+    padding: 40px 0 28px;
+  }
+  header .badge {
+    display: inline-block;
+    background: var(--accent-soft);
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    border-radius: 999px;
+    padding: 4px 18px;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    margin-bottom: 16px;
+  }
+  header h1 {
+    font-size: 34px;
+    font-weight: 800;
+    letter-spacing: 0.02em;
+  }
+  header h1 .file { color: var(--accent); font-family: "SF Mono", Menlo, monospace; }
+  header p.sub { color: var(--muted); margin-top: 10px; font-size: 16px; }
+
+  /* タブ */
+  .tabs {
+    display: flex;
+    gap: 8px;
+    margin: 28px 0 0;
+    border-bottom: 2px solid var(--border);
+  }
+  .tab {
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-size: 16px;
+    font-weight: 700;
+    font-family: inherit;
+    padding: 12px 22px;
+    cursor: pointer;
+    border-radius: 10px 10px 0 0;
+    position: relative;
+    top: 2px;
+    border-bottom: 2px solid transparent;
+    transition: color .15s;
+  }
+  .tab:hover { color: var(--text); }
+  .tab.active {
+    color: var(--accent);
+    background: var(--panel);
+    border: 2px solid var(--border);
+    border-bottom: 2px solid var(--panel);
+  }
+  .tab small { display: block; font-weight: 400; font-size: 12px; color: var(--muted); }
+
+  .pane { display: none; animation: fadein .25s ease; }
+  .pane.active { display: block; }
+  @keyframes fadein { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+  /* ファイルパス表示バー */
+  .filebar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-top: none;
+    padding: 10px 18px;
+    font-family: "SF Mono", Menlo, monospace;
+    font-size: 14px;
+    color: var(--muted);
+  }
+  .filebar .dot { width: 10px; height: 10px; border-radius: 50%; }
+  .dot.r { background: #ff5f57; } .dot.y { background: #febc2e; } .dot.g { background: #28c840; }
+  .filebar .path { margin-left: 8px; color: var(--blue); }
+
+  /* セクションカード */
+  .content {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-top: none;
+    border-radius: 0 0 14px 14px;
+    padding: 36px 40px 44px;
+  }
+  section { margin-bottom: 40px; }
+  section:last-child { margin-bottom: 0; }
+
+  h2 {
+    font-size: 24px;
+    font-weight: 800;
+    padding-bottom: 10px;
+    margin-bottom: 18px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  h2 .icon { font-size: 26px; }
+  h3 {
+    font-size: 19px;
+    font-weight: 700;
+    color: var(--blue);
+    margin: 24px 0 10px;
+  }
+  p { margin-bottom: 12px; }
+  .lead {
+    background: var(--panel-2);
+    border-left: 4px solid var(--accent);
+    border-radius: 0 10px 10px 0;
+    padding: 16px 20px;
+    margin-bottom: 24px;
+    color: var(--text);
+  }
+  ul, ol { padding-left: 26px; margin-bottom: 14px; }
+  li { margin-bottom: 8px; }
+  li::marker { color: var(--accent); }
+  strong { color: #ffd28a; font-weight: 700; }
+  code {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 2px 8px;
+    font-family: "SF Mono", Menlo, monospace;
+    font-size: 0.88em;
+    color: #79c0ff;
+  }
+  pre {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 20px;
+    overflow-x: auto;
+    margin: 12px 0 18px;
+  }
+  pre code { background: none; border: none; padding: 0; color: #a5d6ff; font-size: 15px; }
+
+  /* モデル対応表 */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0 20px;
+    font-size: 15.5px;
+  }
+  th, td {
+    border: 1px solid var(--border);
+    padding: 12px 16px;
+    text-align: left;
+  }
+  th { background: var(--panel-2); color: var(--accent); font-weight: 700; }
+  td .model {
+    font-family: "SF Mono", Menlo, monospace;
+    font-weight: 700;
+  }
+  .m-sonnet { color: var(--green); }
+  .m-opus { color: var(--blue); }
+  .m-fable { color: #d2a8ff; }
+
+  /* チェックリスト */
+  .checklist { list-style: none; padding-left: 4px; }
+  .checklist li { padding-left: 32px; position: relative; }
+  .checklist li::before {
+    content: "☐";
+    position: absolute; left: 0;
+    color: var(--green);
+    font-size: 20px;
+  }
+
+  /* フローバッジ */
+  .flow {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px 22px;
+    margin: 14px 0 20px;
+    font-weight: 700;
+    font-size: 16px;
+  }
+  .flow .step {
+    background: var(--code-bg);
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    border-radius: 8px;
+    padding: 6px 16px;
+  }
+  .flow .arrow { color: var(--muted); }
+
+  footer {
+    text-align: center;
+    color: var(--muted);
+    font-size: 13px;
+    margin-top: 36px;
+  }
+  @media (max-width: 640px) {
+    .content { padding: 24px 20px; }
+    header h1 { font-size: 24px; }
+    body { font-size: 15px; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <div class="badge">Claude Code 設定紹介</div>
+    <h1><span class="file">CLAUDE.md</span> の中身、全部見せます</h1>
+    <p class="sub">グローバル設定（全プロジェクト共通）と プロジェクト設定 の2層構成</p>
+  </header>
+
+  <div class="tabs">
+    <button class="tab active" data-pane="global">
+      🌐 グローバル設定
+      <small>~/.claude/CLAUDE.md</small>
+    </button>
+    <button class="tab" data-pane="project">
+      📦 プロジェクト設定
+      <small>xpostSample/CLAUDE.md</small>
+    </button>
+  </div>
+
+  <!-- ============ グローバル設定 ============ -->
+  <div class="pane active" id="pane-global">
+    <div class="filebar">
+      <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+      <span class="path">~/.claude/CLAUDE.md</span>
+    </div>
+    <div class="content">
+
+      <section>
+        <h2><span class="icon">🎛️</span>モデル運用方針</h2>
+        <div class="lead">
+          クレジット消費を抑えつつ品質を確保するため、<strong>タスクの性質に応じてモデルを使い分ける</strong>。
+          Fable 5 は「真価を発揮する場面」に限定する。
+        </div>
+        <table>
+          <thead>
+            <tr><th>モデル</th><th>役割</th><th>使う場面</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="model m-sonnet">Sonnet 5</span></td>
+              <td>軽量・定型</td>
+              <td>すぐ結果が欲しい質問、CRUD 実装、軽微な修正、単純な置換</td>
+            </tr>
+            <tr>
+              <td><span class="model m-opus">Opus 4.8</span></td>
+              <td><strong>既定</strong></td>
+              <td>判断が必要な通常タスク、迷ったらこれ</td>
+            </tr>
+            <tr>
+              <td><span class="model m-fable">Fable 5</span></td>
+              <td>重いタスク限定</td>
+              <td>アーキテクチャ設計／コードベース全体の監査・大規模移行／複雑なバグの根本原因調査／長時間の自走</td>
+            </tr>
+          </tbody>
+        </table>
+        <h3>委譲ルール</h3>
+        <ul>
+          <li>重いタスクは専用サブエージェント <code>heavy-task</code>（model: claude-fable-5）に委譲</li>
+          <li>メインセッションは <strong>Opus 4.8 のまま維持</strong>。Fable 5 は必要時のみ呼び出す</li>
+        </ul>
+        <h3>ultracode（動的ワークフロー）の方針</h3>
+        <ul>
+          <li>セッション全体を ultracode にはしない（全タスクにワークフロー層が乗って消費が膨らむ）</li>
+          <li>本当に有効な単発タスクだけ、プロンプトに <code>ultracode</code> を付けて起動</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2><span class="icon">🔧</span>ハーネスエンジニアリング</h2>
+        <div class="lead">
+          「モデルの記憶や注意力」ではなく<strong>「環境と仕組み」に品質を担保させる</strong>。
+          コードを書く前に、フィードバックが自動で返ってくる状態を先に作る。
+        </div>
+        <ul>
+          <li>着手時は実装より先に<strong>検証ループ</strong>（テスト・リンタ・型チェック・ビルド・起動確認）を整備</li>
+          <li>同じ指示・訂正が繰り返されたら、CLAUDE.md／スキル／hooks への<strong>恒久化を提案</strong></li>
+          <li>環境の摩擦（曖昧な手順、壊れたビルド、毎回の権限プロンプト）は回避せず<strong>環境側を修正</strong></li>
+        </ul>
+        <h3>プラン立案時の必須ルール</h3>
+        <ol>
+          <li><strong>ハーネス整備フェーズ</strong>（実装より前）— 検証ループ構築、<code>.claude/settings.json</code>、CLAUDE.md 整備</li>
+          <li><strong>ループ設計フェーズ</strong> — デプロイ・動作確認・ログ観測の手順を定義、繰り返し作業は自動化対象に</li>
+        </ol>
+      </section>
+
+      <section>
+        <h2><span class="icon">🔁</span>ループエンジニアリング</h2>
+        <div class="lead">
+          運用・改善の作業は<strong>「実行 → 観測 → 修正」のループ</strong>として設計する。1回きりの修正で完結させない。
+        </div>
+        <div class="flow">
+          <span class="step">実行</span><span class="arrow">→</span>
+          <span class="step">観測</span><span class="arrow">→</span>
+          <span class="step">修正</span><span class="arrow">→</span>
+          <span class="step">自動化へ昇格</span>
+        </div>
+        <ul>
+          <li>修正には効果を観測する手段（ログ・メトリクス・検証コマンド）をセットで用意</li>
+          <li>同じ形の作業が繰り返されるなら hooks／cron／<code>/loop</code>／スクリプト化を提案</li>
+          <li>手戻りが起きたら「ループのどこが欠けていたか」を一言添える</li>
+        </ul>
+      </section>
+
+    </div>
+  </div>
+
+  <!-- ============ プロジェクト設定 ============ -->
+  <div class="pane" id="pane-project">
+    <div class="filebar">
+      <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+      <span class="path">xpostSample/CLAUDE.md</span>
+    </div>
+    <div class="content">
+
+      <section>
+        <h2><span class="icon">📦</span>プロダクトの定義</h2>
+        <div class="lead">
+          Claude Code × Typefully 自動投稿スキルパック（配布用プロダクト）。<br>
+          <strong>プロンプト資産（.md スキル）が製品本体</strong>。コードではなくスキルの文面・README・設定テンプレの品質がプロダクト品質そのもの。
+        </div>
+      </section>
+
+      <section>
+        <h2><span class="icon">✅</span>検証（配布ファイル編集後は必ず実行）</h2>
+        <pre><code>bash scripts/validate.sh</code></pre>
+        <ul>
+          <li>① 設定テンプレの JSON 妥当性</li>
+          <li>② root ↔ <code>.claude/commands/</code> の同期チェック</li>
+          <li>③ 個人情報リーク（禁止語）チェック</li>
+        </ul>
+        <p><code>.claude/settings.json</code> の <strong>PostToolUse hook</strong> により、配布ファイル編集時は<strong>自動実行</strong>される。</p>
+      </section>
+
+      <section>
+        <h2><span class="icon">📜</span>規約</h2>
+        <ul>
+          <li>root の <code>x-post.md</code> / <code>x-research.md</code> / <code>README.md</code> が<strong>配布マスター</strong>。<code>.claude/commands/</code> は動作確認用ミラー</li>
+          <li>配布物に<strong>個人情報を含めない</strong>。個人用の拡張は <code>personal/</code>（配布対象外）へ</li>
+          <li>日付・スケジュール例をハードコードしない（相対表現にする）</li>
+          <li>Typefully API の記述は<strong>実機検証済み仕様</strong>に合わせる（Bearer 認証、2段階メディアアップロード、<code>publish_at</code> は UTC 記法必須 など）</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2><span class="icon">🔁</span>日次ループ運用</h2>
+        <ul>
+          <li><code>/todo-next</code> — TODO の先頭タスクを1件実行 → 完了条件を検証 → チェック → validate → commit まで（1日1回が目安）</li>
+          <li>タスクには必ず<strong>【完了条件】</strong>を付ける</li>
+          <li>安定してきたら <code>/loop</code> や schedule（cron）への昇格を検討</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2><span class="icon">🚀</span>リリースチェックリスト</h2>
+        <ul class="checklist">
+          <li><code>bash scripts/validate.sh</code> が green</li>
+          <li>README を新規ユーザー視点で通し読み（コピペで完走できるか）</li>
+          <li>CHANGELOG 更新・バージョンタグ（git tag vX.Y.Z）</li>
+          <li>配布 zip 生成（<code>personal/</code>・<code>settings.json</code>・<code>scripts/</code> は除外）</li>
+        </ul>
+      </section>
+
+    </div>
+  </div>
+
+  <footer>CLAUDE.md Preview — YouTube 紹介用</footer>
+</div>
+
+<script>
+  document.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.pane').forEach(p => p.classList.remove('active'));
+      tab.classList.add('active');
+      document.getElementById('pane-' + tab.dataset.pane).classList.add('active');
+    });
+  });
+</script>
+</body>
+</html>

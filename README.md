@@ -8,6 +8,7 @@
 
 | 公開日 | タイトル | URL |
 |---|---|---|
+| 2026-07-17 | [いろんなモデルを賢く動かす運用術【メンバー限定】｜Routine Labo](https://senao-routine.github.io/member-share/20260718-4tcgii.html) | https://senao-routine.github.io/member-share/20260718-4tcgii.html |
 | 2026-07-12 | [Claude Codeを母艦に、Codex（GPT-5.6）を"手足"として使う｜Routine Labo メンバー配布](https://senao-routine.github.io/member-share/claudecode-codex-harness-abudyu.html) | https://senao-routine.github.io/member-share/claudecode-codex-harness-abudyu.html |
 | 2026-07-07 | [CLAUDE.md 設定プレビュー](https://senao-routine.github.io/member-share/claude-md-settings-8ej.html) | https://senao-routine.github.io/member-share/claude-md-settings-8ej.html |
 

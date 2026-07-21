@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OpenClaw 仮想組織の設計ベストプラクティスと海外活用事例</title>
+<style>
+  :root {
+    --bg:#f6f2e9; --surface:#fffdf8; --surface-2:#f0ead9;
+    --ink:#241f18; --ink-soft:#5c5346; --ink-faint:#8a7f6d;
+    --line:#e2d9c6; --line-soft:#ece4d4;
+    --accent:#b9791a; --accent-ink:#8a5a10; --accent-bg:#f6e7cd;
+    --teal:#2f6f68; --green:#2f7a4f;
+    --code-bg:#26221b; --code-ink:#ece3d2;
+    --shadow:0 1px 2px rgba(40,32,18,.05),0 8px 30px rgba(40,32,18,.06);
+    --radius:14px; --maxw:900px;
+    --font-jp:"Hiragino Kaku Gothic ProN","Hiragino Sans","Noto Sans JP","Yu Gothic",system-ui,sans-serif;
+    --font-mono:"SFMono-Regular",Menlo,Consolas,"Noto Sans Mono",monospace;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--bg); color:var(--ink); font-family:var(--font-jp); line-height:1.85; font-size:16px; }
+  .container { max-width:var(--maxw); margin:0 auto; padding:44px 22px 80px; }
+  header { text-align:center; margin-bottom:34px; }
+  .badge { display:inline-block; background:var(--accent-bg); color:var(--accent-ink); border:1px solid var(--accent); border-radius:999px; padding:5px 20px; font-size:13px; font-weight:700; letter-spacing:.12em; }
+  h1 { font-size:30px; font-weight:800; line-height:1.5; margin:18px 0 12px; }
+  h1 .gold { color:var(--accent-ink); }
+  .sub { color:var(--ink-soft); font-size:15.5px; max-width:42em; margin:0 auto; }
+  .rule { width:64px; height:3px; margin:26px auto 0; border-radius:2px; background:linear-gradient(90deg,var(--accent),var(--teal)); }
+  .card { background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow); padding:28px 32px; margin-bottom:24px; }
+  .kicker { color:var(--teal); font-size:13.5px; font-weight:700; letter-spacing:.16em; margin-bottom:8px; }
+  h2 { font-size:21px; font-weight:800; margin-bottom:14px; }
+  h3 { font-size:17px; font-weight:700; color:var(--teal); margin:20px 0 8px; }
+  p { margin-bottom:12px; }
+  strong { color:var(--accent-ink); }
+  ul,ol { padding-left:24px; margin-bottom:12px; }
+  li { margin-bottom:7px; } li::marker { color:var(--accent); }
+  code { background:var(--surface-2); border:1px solid var(--line); border-radius:6px; padding:2px 8px; font-family:var(--font-mono); font-size:.86em; color:var(--accent-ink); }
+  pre { background:var(--code-bg); border-radius:10px; padding:18px 22px; overflow-x:auto; margin:12px 0 16px; }
+  pre code { background:none; border:none; padding:0; color:var(--code-ink); font-size:13.5px; line-height:1.75; }
+  .lead { background:var(--surface-2); border:1px solid var(--line); border-radius:10px; padding:14px 20px; margin-bottom:22px; }
+  .tablewrap { overflow-x:auto; }
+  table { width:100%; border-collapse:collapse; margin:14px 0 18px; font-size:15px; }
+  th,td { border:1px solid var(--line); padding:10px 14px; text-align:left; vertical-align:top; }
+  th { background:var(--surface-2); color:var(--accent-ink); font-weight:700; }
+  .b { font-size:12px; font-weight:700; border-radius:8px; padding:2px 10px; white-space:nowrap; }
+  .b.done { background:#e5f0ea; color:var(--green); border:1px solid var(--green); }
+  .b.wip  { background:var(--accent-bg); color:var(--accent-ink); border:1px solid var(--accent); }
+  .b.wait { background:var(--surface-2); color:var(--ink-faint); border:1px solid var(--line); }
+  .bar { height:10px; background:var(--surface-2); border:1px solid var(--line); border-radius:999px; overflow:hidden; }
+  .bar > span { display:block; height:100%; background:linear-gradient(90deg,var(--accent),var(--teal)); }
+  .hairline { border-top:1px solid var(--line-soft); margin:22px 0; }
+  .src { font-size:13px; color:var(--ink-faint); word-break:break-all; }
+  .stat-row { display:flex; flex-wrap:wrap; gap:14px; margin:6px 0 14px; }
+  .stat { flex:1 1 130px; background:var(--surface-2); border:1px solid var(--line); border-radius:10px; padding:12px 16px; text-align:center; }
+  .stat .num { font-size:26px; font-weight:800; color:var(--accent-ink); line-height:1.3; }
+  .stat .lbl { font-size:12.5px; color:var(--ink-soft); }
+  .phase { display:flex; gap:14px; align-items:flex-start; margin-bottom:16px; }
+  .phase .no { flex:0 0 40px; height:40px; border-radius:50%; background:var(--accent-bg); border:1px solid var(--accent); color:var(--accent-ink); font-weight:800; display:flex; align-items:center; justify-content:center; }
+  footer { text-align:center; color:var(--ink-faint); font-size:12.5px; margin-top:32px; }
+  @media (max-width:600px){ .container{ padding:28px 16px 60px; } h1{ font-size:23px; } .card{ padding:22px 18px; } }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <span class="badge">ディープリサーチ報告 ／ 2026-07-21</span>
+    <h1>OpenClaw 仮想組織の<span class="gold">設計ベストプラクティス</span>と海外活用事例</h1>
+    <p class="sub">「works のようにチャンネル別で制作を走らせ、総合管理が統括する」体制は OpenClaw の公式機能でそのまま設計できるのか——104エージェント・22ソース・109主張を3票の敵対的検証にかけた結果です。</p>
+    <div class="rule"></div>
+  </header>
+
+  <div class="card">
+    <div class="kicker">ANSWER</div>
+    <h2>結論：できます。しかも公式が想定している「正規ルート」がある</h2>
+    <p class="lead">やりたい体制（チャンネル別の専門担当＋司令塔統括）は、OpenClaw が <strong>agents.list による完全分離エージェント</strong>＋<strong>bindings ルーティング</strong>＋<strong>sessions_spawn オーケストレータ</strong>＋<strong>Task Flow</strong> として公式にサポートしている構成そのものでした。今の「main 1体＋AGENTS.md ペルソナ切替」は入門形で、<strong>Gateway を増やさずに</strong>次の段階へ移行できます。</p>
+    <div class="stat-row">
+      <div class="stat"><div class="num">23</div><div class="lbl">検証通過した主張<br>（3票の敵対的検証）</div></div>
+      <div class="stat"><div class="num">2</div><div class="lbl">反証されて棄却</div></div>
+      <div class="stat"><div class="num">9</div><div class="lbl">統合後の主要 finding<br>（全て高信頼・公式docs由来）</div></div>
+      <div class="stat"><div class="num">0</div><div class="lbl">Part 2 検証通過<br>（海外事例は情報なし）</div></div>
+    </div>
+    <p style="font-size:14px;color:var(--ink-soft);">※ Part 2（海外パワーユーザーの分野別事例）は検証を通過した主張が <strong>0件</strong>でした。それらしく埋めず「情報なし」と報告します。ただし検証前段階で見つかった<strong>有望なリード</strong>は後半に未検証と明記して載せています。</p>
+  </div>
+
+  <div class="card">
+    <div class="kicker">PART 1 — 公式仕様（全て一次資料で裏取り済み）</div>
+    <h2>設計の6本柱</h2>
+
+    <h3>① エージェント＝「ペルソナ単位の完全スコープ」</h3>
+    <p>OpenClaw の「エージェント」は workspace・auth・モデル設定・セッションストアを束ねた単位で、<code>agents.list</code> により<strong>1つの Gateway プロセス内に複数の分離エージェント</strong>を走らせられます。各エージェントは自動的に独立 workspace（独自の AGENTS.md / メモリ）を持ち、モデル・skills 許可・名前/アバターも個別に設定可能。</p>
+    <p class="src">docs.openclaw.ai/concepts/multi-agent ・ /gateway/config-agents ・ /concepts/agent-workspace</p>
+    <p>⚠️ 注意2点：<strong>agentDir の使い回しは厳禁</strong>（auth/セッション衝突。公式が明示警告）。「分離」はセキュリティサンドボックスではなく状態の分離（絶対パスを書けばホストに届く）。</p>
+
+    <h3>② bindings：チャンネル→エージェントの決定論的ルーティング</h3>
+    <p>bindings 配列が Discord bot アカウントをエージェントにマッピングします。解決は「最も具体的なものが勝つ」9段階の固定優先順位（exact peer → スレッド親 → guild+ロール → guild → アカウント → デフォルト）。つまり<strong>「このチャンネルはこのエージェント」を設定で確定的に固定</strong>できます。</p>
+    <pre><code>openclaw bindings add --agent blog --channel discord --account fourth</code></pre>
+    <p class="src">docs.openclaw.ai/channels/channel-routing ・ /concepts/multi-agent</p>
+
+    <h3>③ エージェント間メッセージング（sessions_send）は既定OFF</h3>
+    <p>司令塔がエージェント間で指示・報告をやりとりする公式手段は <code>sessions_send</code>。ただし<strong>既定で無効</strong>で、<code>tools.agentToAgent</code> に <code>enabled: true</code>＋許可エージェントIDの列挙が必要です。</p>
+    <pre><code>{ "tools": { "agentToAgent": { "enabled": true,
+    "allow": ["main", "blog", "video", "engineer"] } } }</code></pre>
+    <p class="src">docs.openclaw.ai/concepts/multi-agent ・ /tools/multi-agent-sandbox-tools</p>
+
+    <h3>④ sessions_spawn：公式オーケストレータ・パターン</h3>
+    <p>サブエージェント起動は非ブロッキングで即 run id を返し、隔離セッションで走ります。<code>maxSpawnDepth: 2</code>（公式推奨値）で「<strong>main → オーケストレータ → ワーカー</strong>」の階層が組め、結果は下から上へ自動集約。既定値：同時実行 8・子エージェント上限 5。<strong>重い/反復タスクのサブエージェントには安価なモデルを割り当てるのが公式推奨</strong>（サブ側だけ Sonnet 等に落とす＝コスト設計がそのまま公式に載っている）。</p>
+    <p class="src">docs.openclaw.ai/tools/subagents（v2026.2.15 出荷）</p>
+
+    <h3>⑤ Task Flow：複数ステップ制作の「耐久レコード」</h3>
+    <p>Task Flow はバックグラウンドタスクの上位レイヤで、複数ステップ作業の状態（status・JSON state・リビジョン）を <strong>Gateway 再起動をまたいで</strong>保持します。公式は定期ワークフローを4層に分離することを推奨：<strong>①タイミング＝cron ②文脈継続＝persistent cron session ③決定的ステップ・承認ゲート＝Lobster ④進捗追跡＝Task Flow</strong>。管理は <code>openclaw tasks flow list|show|cancel</code>。</p>
+    <p class="src">docs.openclaw.ai/automation/taskflow ・ /automation（2026.4.2 出荷の新機能）</p>
+
+    <h3>⑥ cron vs heartbeat の公式基準</h3>
+    <p>「<strong>正確なタイミング・隔離実行なら cron／フルのセッション文脈が効いて時刻が概算でよければ heartbeat</strong>（既定30分）」。cron は必ずタスクレコードを残し、heartbeat は残しません。脚注：<strong>Anthropic OAuth 認証だと heartbeat 既定が1時間</strong>になるため、使うなら <code>heartbeat.every</code> を明示設定。</p>
+    <p class="src">docs.openclaw.ai/automation#scheduled-tasks-cron-vs-heartbeat ・ /gateway/heartbeat</p>
+  </div>
+
+  <div class="card">
+    <div class="kicker">CRITICAL FINDING</div>
+    <h2>⚠️ 今の構成に直接効く発見：botはDiscordメンションで会話できない</h2>
+    <p>GitHub Issue #11199（コミュニティ報告・実装確認あり）：OpenClaw は<strong>自インスタンスに設定された全botアカウントからの受信メッセージをフィルタ</strong>します。つまり Claw02 が #総合管理 に報告を投稿しても、<strong>main bot はそれを「読んで」いません</strong>。</p>
+    <p>今の「部下bot→総合管理チャンネルへ完了報告」は<strong>senao が読む分には機能</strong>していますが、<strong>司令塔botによる自動統括（報告を受けて次の指示を出す）は Discord 経由では成立しない</strong>ということです。bot同士の連携をやるなら ③ の <code>sessions_send</code>（＝agents.list 分離が前提）が唯一の公式ルートです。</p>
+    <p>関連して、<strong>各チャンネルセッションは設計上互いに見えない</strong>（同一エージェントでもチャンネル間のクロス認識なし）、<strong>MEMORY.md の自動ロードはDMセッションのみ</strong>（ギルドチャンネルではメモリツールを明示的に使う必要）も公式仕様として確認しました。</p>
+    <p class="src">github.com/openclaw/openclaw/issues/11199 ・ docs.openclaw.ai/channels/discord</p>
+  </div>
+
+  <div class="card">
+    <div class="kicker">BLUEPRINT</div>
+    <h2>senao 構成への適用設計図（段階移行）</h2>
+    <p class="lead">一気に分離せず、<strong>混線・容量の実害が出ているところから</strong>段階導入するのが妥当です（エージェント数×独立コンテキスト分のトークン・メモリ増があるため。Mac mini 16GB）。</p>
+
+    <div class="phase"><div class="no">0</div><div>
+      <h3 style="margin-top:6px;">現状維持でよいもの</h3>
+      <p>軽い担当（リサーチ・運用戦略・広報など）は今の「main＋ペルソナ切替」のままで問題なし。並行性はチャンネル数で既に確保済み（本日実測：並行2本=9秒 vs 直列20秒）。</p>
+    </div></div>
+
+    <div class="phase"><div class="no">1</div><div>
+      <h3 style="margin-top:6px;">制作系だけ agents.list で独立エージェント化</h3>
+      <p><strong>ブログ・動画編集・エンジニア×2</strong> を独立エージェントに分離 → bindings でチャンネルに固定。効果は3つ：</p>
+      <ul>
+        <li>メモリ・セッション・skills 許可がチャンネル毎に分離（制作物の文脈が混ざらない）</li>
+        <li><strong>AGENTS.md の肥大が解消</strong>——今日21,630字で上限90%に達している単一ファイルが、エージェント別の小さなファイルに分割される（切り捨てリスクの恒久解決）</li>
+        <li>エージェント別にモデルを変えられる（制作系だけ強いモデル、など）</li>
+      </ul>
+    </div></div>
+
+    <div class="phase"><div class="no">2</div><div>
+      <h3 style="margin-top:6px;">司令塔の統括を「本物」にする</h3>
+      <p><code>tools.agentToAgent</code> を有効化して main→専門エージェントの指示・報告を <code>sessions_send</code> で配線（Discord経由のbot間会話は不成立のため、これが唯一の公式ルート）。エージェント内の並列作業は <code>maxSpawnDepth: 2</code>＋<strong>サブエージェントに安価モデル割当</strong>でコストを抑える。</p>
+    </div></div>
+
+    <div class="phase"><div class="no">3</div><div>
+      <h3 style="margin-top:6px;">制作パイプラインを Task Flow に載せる</h3>
+      <p>「日次リサーチ→記事化→サムネ→承認→公開」のような複数ステップは、cron（時刻）＋Task Flow（再起動耐性のある進捗追跡）＋Lobster（承認ゲート）に分離。既存の Discord ✅/❌ PreToolUse ゲートと役割が重なるため、<strong>統合方法は次の調査課題</strong>。運用の観測は <code>openclaw tasks list / audit</code> をループに組み込む。</p>
+    </div></div>
+
+    <p style="font-size:14px;color:var(--ink-soft);">※ この設計図の「事実部分」は全て3-0で検証済みの公式docs由来。「senao 環境でこう組むべき」という適用判断はリサーチからの推論であり、docs が直接この構成を推奨しているわけではありません。</p>
+  </div>
+
+  <div class="card">
+    <div class="kicker">PART 2 — 海外活用事例</div>
+    <h2>検証通過ゼロ。ただし有望なリードあり（全て未検証）</h2>
+    <p class="lead">エンジニアリング／SNSマーケ／デザイン分野の「トップユーザーの具体的構成」は、<strong>3票検証を通過した主張が0件</strong>でした。コミュニティ発の情報は存在するものの、裏取りできる形では残らず——これが正直な結果です。以下は検証前段階で収集された<strong>未検証リード</strong>（役に立つ可能性は高いが、鵜呑みにしない前提で）。</p>
+    <div class="tablewrap">
+    <table>
+      <thead><tr><th>リード</th><th>分野</th><th>内容（未検証）</th></tr></thead>
+      <tbody>
+        <tr><td><code>hesamsheikh/awesome-openclaw-usecases</code><br>content-factory.md</td><td>コンテンツ制作</td><td>リサーチ・執筆・サムネの3エージェントを #research / #scripts / #thumbnails のチャンネル別に走らせるパイプライン。<strong>「下書きまで自動・公開は人間承認」の原則</strong>まで senao の構成と同型</td></tr>
+        <tr><td><code>goldmar/openclaw-code-agent</code></td><td>エンジニアリング</td><td>Claude Code / Codex を管理付きバックグラウンドセッションで回すプラグイン。<strong>Plan→Review→Execute の計画承認・worktree分離・PR追跡</strong>を上乗せ</td></tr>
+        <tr><td><code>Enderfga/claw-orchestrator</code></td><td>エンジニアリング</td><td>複数のコーディングCLI（Claude Code / Codex / Cursor等）を永続セッションとして束ねるランタイム</td></tr>
+        <tr><td><code>allvegetable/acp-bridge</code></td><td>エンジニアリング</td><td>ACP（JSON-RPC）で複数コーディングエージェントを子プロセス管理する非公式オーケストレータ</td></tr>
+        <tr><td><code>averatec0773/openclaw-discord-multiagent</code></td><td>構成例</td><td>1 Gateway 上で2つのDiscord bot（私用アシスタント＋公開エージェント）を agents.list 分離で運用する本番リファレンス</td></tr>
+        <tr><td>openclawready.com ブログ</td><td>コンテンツ制作</td><td><code>openclaw cron add --session isolated</code> でコンテンツパイプライン全体を無人運転する構成例</td></tr>
+        <tr><td>GitHub Issue #64435</td><td>参考（棄却情報）</td><td>「Octopus Orchestrator」提案は <strong>not planned でクローズ</strong>——core への外付けオーケストレータ搭載は公式が採用しない方針。オーケストレーションは sessions_spawn / Task Flow で組むのが正</td></tr>
+      </tbody>
+    </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="kicker">REFUTED</div>
+    <h2>反証された俗説（信じないでよい話）</h2>
+    <ul>
+      <li><strong>「返信は必ず受信チャンネルに戻り、モデルは配送先を選べない」→ 反証（1-2）。</strong>実際は <code>openclaw message send</code> 等で別チャンネルへの送信が可能——今の「部下botが総合管理へ報告を投げる」運用はこのまま有効です。</li>
+      <li><strong>「公式docsは複数workspace保守が auth/state drift を招くと警告している」→ 反証（0-3）。</strong>agents.list 分離に反対する公式根拠は存在しません（警告されているのは agentDir の使い回しのみ）。</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <div class="kicker">OPEN QUESTIONS</div>
+    <h2>残った調査課題</h2>
+    <ul>
+      <li><strong>Lobster の仕様詳細</strong>と、既存 Discord ✅/❌ 承認ゲートとの統合・重複整理（Phase 3 の前提）</li>
+      <li>agents.list フル分離時の<strong>実コスト</strong>（トークン増・16GB での同時実行上限・maxConcurrent 適正値）</li>
+      <li><code>commitments</code> 機能の所在（今回の検証では確認できず）</li>
+      <li>海外事例は検索チャネルを変えれば見つかるのか（コミュニティDiscord内・YouTube・X検索は未踏）</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <div class="kicker">METHOD</div>
+    <h2>調査の方法と規模</h2>
+    <div class="stat-row">
+      <div class="stat"><div class="num">104</div><div class="lbl">エージェント</div></div>
+      <div class="stat"><div class="num">5</div><div class="lbl">検索アングル</div></div>
+      <div class="stat"><div class="num">22</div><div class="lbl">取得ソース</div></div>
+      <div class="stat"><div class="num">109</div><div class="lbl">抽出された主張</div></div>
+      <div class="stat"><div class="num">25</div><div class="lbl">敵対的検証にかけた数</div></div>
+    </div>
+    <p>各主張に独立の検証者3体を割り当て「反証せよ」と指示、2票以上の反証で棄却する方式。検証済み主張は全て出典URL付きで、公式docs由来／コミュニティ由来を区別しています。全docs確認は2026-07-21時点（Task Flow は新機能のため仕様変動リスクあり）。</p>
+    <div class="hairline"></div>
+    <p class="src">主要出典: docs.openclaw.ai（multi-agent / config-agents / channel-routing / agent-workspace / subagents / taskflow / automation / tasks / heartbeat / discord）、github.com/openclaw/openclaw（Issues #11199, #64435 ほか）、コミュニティ（awesome-openclaw-usecases / openclaw-code-agent / claw-orchestrator / acp-bridge / openclawready.com / Medium ほか）</p>
+  </div>
+
+  <footer>
+    生成: 2026-07-21 ／ deep-research ワークフロー（104エージェント・敵対的検証つき）による調査結果
+  </footer>
+</div>
+</body>
+</html>

@@ -9,6 +9,7 @@
 | 公開日 | タイトル | URL |
 |---|---|---|
 | 2026-07-27 | [CLAUDE.md の棚卸し — 何を消し、何を残し、何を移すか](https://senao-routine.github.io/member-share/20260727CLAUDEmd-8zbl9h.html) | https://senao-routine.github.io/member-share/20260727CLAUDEmd-8zbl9h.html |
+| 2026-07-27 | [CLAUDE.md の棚卸し — 何を消し、何を残し、何を移すか](https://senao-routine.github.io/member-share/20260727CLAUDEmd-8zbl9h-g6zti6.html) | https://senao-routine.github.io/member-share/20260727CLAUDEmd-8zbl9h-g6zti6.html |
 | 2026-07-22 | [いろんなモデルを賢く動かす運用術【メンバー限定】｜Routine Labo](https://senao-routine.github.io/member-share/fable5-gpt56-workflow-8lkuw9.html) | https://senao-routine.github.io/member-share/fable5-gpt56-workflow-8lkuw9.html |
 | 2026-07-21 | [OpenClaw 仮想組織の設計ベストプラクティスと海外活用事例](https://senao-routine.github.io/member-share/openclaw-research-20260721-kcexc7.html) | https://senao-routine.github.io/member-share/openclaw-research-20260721-kcexc7.html |
 | 2026-07-21 | [Qwen3.8 を読み解く｜2.4兆パラメータは本当にすごいのか — Routine Labo](https://senao-routine.github.io/member-share/20260720Qwen3-8-y0q7qn.html) | https://senao-routine.github.io/member-share/20260720Qwen3-8-y0q7qn.html |

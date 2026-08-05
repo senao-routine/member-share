@@ -8,6 +8,7 @@
 
 | 公開日 | タイトル | URL |
 |---|---|---|
+| 2026-08-05 | [ビジネスAI講座 第1回 — 僕がAIで作った5つの収入源](https://senao-routine.github.io/member-share/20260805%E3%83%93%E3%82%B8%E3%83%8D%E3%82%B9AI%E8%AC%9B%E5%BA%A701-g6noc5.html) | https://senao-routine.github.io/member-share/20260805%E3%83%93%E3%82%B8%E3%83%8D%E3%82%B9AI%E8%AC%9B%E5%BA%A701-g6noc5.html |
 | 2026-07-27 | [スライドキャストキット — メンバー限定配布のご案内](https://senao-routine.github.io/member-share/slidecast-kit-874osg.html) | https://senao-routine.github.io/member-share/slidecast-kit-874osg.html |
 | 2026-07-27 | [CLAUDE.md の棚卸し — 何を消し、何を残し、何を移すか](https://senao-routine.github.io/member-share/20260727CLAUDEmd-8zbl9h.html) | https://senao-routine.github.io/member-share/20260727CLAUDEmd-8zbl9h.html |
 | 2026-07-22 | [いろんなモデルを賢く動かす運用術【メンバー限定】｜Routine Labo](https://senao-routine.github.io/member-share/fable5-gpt56-workflow-8lkuw9.html) | https://senao-routine.github.io/member-share/fable5-gpt56-workflow-8lkuw9.html |

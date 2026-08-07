@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>声で Claude Code を動かす — 導入ガイド（メンバー限定）</title>
+<style>
+  /* ============================================================
+     works 共通デザイントークン（正本）— 2026-07-07 確定
+     このワークスペースで作る配布用・プレビュー用HTMLは
+     必ずこの :root をコピーして使う。基本ライトテーマ。
+     ダークのGitHub風配色（#0d1117系）は使わない。
+     由来: 下準備/Routine Labo/20260703_Fable5準備5選/
+           LINE配布_Fable5重タスクプロンプト完全版.html
+     ============================================================ */
+  :root {
+    /* warm parchment ground, ink text, amber-gold accent, teal secondary */
+    --bg:        #f6f2e9;  /* パーチメント地（ページ背景） */
+    --surface:   #fffdf8;  /* カード面 */
+    --surface-2: #f0ead9;  /* 微差ブロック（表ヘッダ・淡いパネル） */
+    --ink:       #241f18;  /* 本文 */
+    --ink-soft:  #5c5346;  /* やや薄い本文 */
+    --ink-faint: #8a7f6d;  /* 補足テキスト */
+    --line:      #e2d9c6;  /* 罫線 */
+    --line-soft: #ece4d4;  /* さらに薄い罫線 */
+    --accent:    #b9791a;  /* アンバーゴールド（主アクセント） */
+    --accent-ink:#8a5a10;  /* 濃いゴールド（strong/hover） */
+    --accent-bg: #f6e7cd;  /* アクセント淡背景（バッジ等） */
+    --teal:      #2f6f68;  /* ティール（副色: 小見出し/リンク/完了状態） */
+    --code-bg:   #26221b;  /* コード面（ここだけ暗背景） */
+    --code-ink:  #ece3d2;  /* コード文字 */
+    --code-line: #3a352b;  /* コード内罫線 */
+    --shadow: 0 1px 2px rgba(40,32,18,.05), 0 8px 30px rgba(40,32,18,.06);
+    --radius: 14px;
+    --maxw: 760px;
+    --font-jp: "Hiragino Kaku Gothic ProN","Hiragino Sans","Noto Sans JP","Yu Gothic",system-ui,sans-serif;
+    --font-mono: "SFMono-Regular",Menlo,Consolas,"Noto Sans Mono",monospace;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--bg); color:var(--ink); font-family:var(--font-jp); line-height:1.9; font-size:16px; }
+  .container { max-width:var(--maxw); margin:0 auto; padding:48px 22px 80px; }
+
+  /* ---- 見本: ヘッダー（バッジ→h1→リード→区切り線） ---- */
+  .badge { display:inline-block; background:var(--accent-bg); color:var(--accent-ink); border:1px solid var(--accent); border-radius:999px; padding:5px 20px; font-size:13px; font-weight:700; letter-spacing:.14em; }
+  header { text-align:center; margin-bottom:40px; }
+  h1 { font-size:30px; font-weight:800; line-height:1.5; margin:18px 0 12px; }
+  h1 .gold { color:var(--accent-ink); }
+  .sub { color:var(--ink-soft); font-size:15.5px; max-width:34em; margin:0 auto; }
+  .rule { width:64px; height:3px; margin:28px auto 0; border-radius:2px; background:linear-gradient(90deg, var(--accent), var(--teal)); }
+
+  /* ---- 見本: カード＋kicker（ティール小見出し） ---- */
+  .card { background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow); padding:30px 34px; margin-bottom:26px; }
+  .kicker { color:var(--teal); font-size:13.5px; font-weight:700; letter-spacing:.18em; margin-bottom:8px; }
+  h2 { font-size:21px; font-weight:800; margin-bottom:14px; }
+  p { margin-bottom:12px; }
+  strong { color:var(--accent-ink); }
+  ul { padding-left:24px; margin-bottom:12px; }
+  li::marker { color:var(--accent); }
+
+  /* ---- 見本: インラインコード / コードブロック（暗背景はここだけ） ---- */
+  code { background:var(--surface-2); border:1px solid var(--line); border-radius:6px; padding:2px 8px; font-family:var(--font-mono); font-size:.86em; color:var(--accent-ink); }
+  pre { background:var(--code-bg); border-radius:10px; padding:18px 22px; overflow-x:auto; margin:12px 0 16px; }
+  pre code { background:none; border:none; padding:0; color:var(--code-ink); font-size:13.5px; line-height:1.75; }
+
+  /* ---- 見本: 表 ---- */
+  table { width:100%; border-collapse:collapse; margin:14px 0 18px; font-size:15px; }
+  th,td { border:1px solid var(--line); padding:10px 14px; text-align:left; }
+  th { background:var(--surface-2); color:var(--accent-ink); font-weight:700; }
+
+  /* ---- 見本: コピーボタン ---- */
+  .copybox { position:relative; }
+  .copy-btn { position:absolute; top:12px; right:12px; background:var(--accent); color:#fff; border:none; border-radius:8px; font-family:inherit; font-weight:700; font-size:13.5px; padding:8px 16px; cursor:pointer; transition:background .15s; }
+  .copy-btn:hover { background:var(--accent-ink); }
+  .copy-btn.done { background:var(--teal); }
+
+  /* ---- 見本: スウォッチ（このページ専用） ---- */
+  .swatches { display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:10px; }
+  .sw { border:1px solid var(--line); border-radius:10px; overflow:hidden; background:var(--surface); font-size:12.5px; }
+  .sw .chip { height:44px; }
+  .sw .meta { padding:6px 10px; font-family:var(--font-mono); color:var(--ink-soft); }
+  footer { text-align:center; color:var(--ink-faint); font-size:12.5px; margin-top:36px; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <span class="badge">メンバー限定配布 — voice-agent v0.1.0</span>
+    <h1>声で <span class="gold">Claude Code</span> を動かす — 導入ガイド</h1>
+    <p class="sub">受け取った zip を展開して、話しかけて開発できるようになるまで。
+    つまずきやすいところと、実際にかかるお金も、実測値で書いてあります。</p>
+    <div class="rule"></div>
+  </header>
+
+  <div class="card">
+    <div class="kicker">WHAT — これは何をする道具か</div>
+    <h2>画面を見ないで開発が進む</h2>
+    <p>ターミナルのコーディングエージェント（Claude Code）に<strong>声で作業を頼み、進み具合を声で聞く</strong>ためのローカルアプリです。
+    実行してよいかの確認にも「はい / いいえ」で答えます。</p>
+    <p>話している最中から相手は聞いていて、<strong>言い終わる前に返事が組み立ち始めます</strong>。
+    読み上げの途中で話しかければ割り込めます。</p>
+    <p class="sub" style="margin-top:14px">雑談や進捗確認は窓口役の会話係がその場で答え、<strong>実作業が要るときだけ</strong> Claude Code に渡します。
+    全部を Claude Code に流すと雑談でも数秒待たされるため、ここを分けてあります。</p>
+  </div>
+
+  <div class="card">
+    <div class="kicker">REQUIREMENTS — 動作環境</div>
+    <h2>動く組み合わせ</h2>
+    <table>
+      <thead><tr><th>環境</th><th>状態</th></tr></thead>
+      <tbody>
+        <tr><td><strong>macOS 14 以降</strong></td><td>全機能（想定している環境）</td></tr>
+        <tr><td>Windows 11 / Linux（x64・arm64）</td><td>会話と開発は動く。<strong>PC 操作</strong>と権限診断の一部が使えない</td></tr>
+        <tr><td>Windows on ARM / Alpine</td><td><strong>非対応</strong>。資料検索に使う sqlite-vec のバイナリが無く、サーバが起動しない</td></tr>
+      </tbody>
+    </table>
+    <p style="margin-top:16px">ほかに <strong>Node.js 22 以上</strong>・<strong>pnpm 10</strong>（<code>corepack enable</code> で入ります）・
+    <strong>Chrome か Edge</strong>（マイクと WebRTC を使うため。Safari は未確認）が要ります。</p>
+    <p class="sub">依存パッケージはすべてビルド済みのものが配られるので、<strong>ネイティブのコンパイルは走りません</strong>。</p>
+  </div>
+
+  <div class="card">
+    <div class="kicker">KEYS — 用意するもの</div>
+    <h2>必要なのは2つだけ</h2>
+
+    <h3>① Claude Code にログインしたターミナル</h3>
+    <p><strong>このアプリに Anthropic の API キーは要りません。</strong>ターミナルで <code>claude</code> が動く状態（＝ログイン済み）であれば、
+    その資格情報をそのまま使います。まだなら Claude Code を入れてログインしておいてください。</p>
+
+    <h3>② OpenAI の API キー（音声に使う）</h3>
+    <ol>
+      <li><code>platform.openai.com/api-keys</code> で「Create new secret key」</li>
+      <li><strong>作った直後の1回しか全体を見られない</strong>ので、その場でコピーする</li>
+      <li>支払い方法の登録が必要です</li>
+      <li><code>gpt-realtime</code> が使えないと言われたら、組織の本人確認（Verify Organization）をします</li>
+    </ol>
+    <p class="sub">キーが無くても動きます。テキスト入力での対話・テストはそのまま通り、<strong>音声だけが無効</strong>になります。</p>
+  </div>
+
+  <div class="card">
+    <div class="kicker">SETUP — 入れて動かす</div>
+    <h2>展開して、4つ打つだけ</h2>
+    <div class="copybox">
+      <button class="copy-btn" onclick="const t=this.parentElement.querySelector('code').innerText;navigator.clipboard.writeText(t);this.textContent='✓ コピーしました';this.classList.add('done');const b=this;setTimeout(()=>{b.textContent='📋 コピー';b.classList.remove('done')},1800)">📋 コピー</button>
+      <pre><code>corepack enable              # pnpm を使えるようにする
+pnpm install
+cp .env.example .env         # OPENAI_API_KEY を書く
+pnpm run doctor              # 足りないものを日本語で教えてくれる
+pnpm dev                     # → http://localhost:5173</code></pre>
+    </div>
+    <p style="margin-top:16px"><strong><code>pnpm doctor</code> ではなく <code>pnpm run doctor</code></strong> と打ってください。
+    <code>run</code> を省くと pnpm 内蔵のコマンドに取られて何も出ません。</p>
+    <p>初回は macOS の許可（アクセシビリティ・オートメーション・画面収録）を聞かれます。
+    <strong>許可は起動したアプリごとに付く</strong>ので、ターミナルから起動する場合と常駐させる場合で別に必要です。</p>
+  </div>
+
+  <div class="card">
+    <div class="kicker">USE — 使い方</div>
+    <h2>開いたら、あとは話しかけるだけ</h2>
+    <p>ブラウザを開くとマイクが開いて、会話係が挨拶を返します。</p>
+    <ul>
+      <li>ファイルの読み書き・コマンド実行は<strong>1つずつ声で確認</strong>してから実行されます（画面のボタンでも可）</li>
+      <li>途中でやめたくなったら「中断」</li>
+      <li>「作業画面を見せて」で 3D の作業画面へ、「英語表示にして」で表記が英語に</li>
+      <li>「軽いモデルにして」で会話係を切り替えられます</li>
+    </ul>
+    <p class="sub">自動で許可するのは読み取り系の道具（Read / Glob / Grep / TodoWrite）だけです。</p>
+  </div>
+
+  <div class="card">
+    <div class="kicker">SAFETY — 勝手に動かない仕組み</div>
+    <h2>雑談では作業が始まりません</h2>
+    <p>声で開発をさせる以上、<strong>聞き間違いでコマンドが走るのがいちばん怖い</strong>ところです。
+    実際に、スピーカーから出た自分の読み上げをマイクが拾って、こちらが一言も話していないのに作業が始まったことがありました
+    （3分30秒動いて約 $0.48）。</p>
+    <p>そのため、作業を始める前に「人が実際にそう言ったか」を機械的に確かめています。次の場合は<strong>作業を始めません</strong>。</p>
+    <ul>
+      <li>直前の発話が確認できない</li>
+      <li>聞き取れた言葉が短すぎる／相槌だけ</li>
+      <li>こちらの読み上げを拾ったように見える</li>
+      <li>同じ依頼が続いた</li>
+    </ul>
+    <p><strong>見送ったときは画面に理由が出ます。</strong>「頼んだのに動かない」と思ったら、まずそこを見てください。</p>
+  </div>
+
+  <div class="card">
+    <div class="kicker">COST — 実際にかかるお金</div>
+    <h2>財布は2つあります</h2>
+    <p>ひとつは<strong>音声の会話係</strong>（OpenAI）、もうひとつが<strong>実作業</strong>（Claude Code）です。
+    雑談や進捗確認だけなら、会話係のぶんしかかかりません。</p>
+    <table>
+      <thead><tr><th>何に</th><th>実測</th><th>母数</th></tr></thead>
+      <tbody>
+        <tr><td>会話係 1応答</td><td><strong>$0.02</strong></td><td>30 応答の平均（標準モデル）</td></tr>
+        <tr><td>実作業 起動して1回目</td><td><strong>$0.19</strong></td><td>7 セッションの中央値（$0.15〜$0.38）</td></tr>
+        <tr><td>実作業 2回目以降</td><td><strong>$0.07</strong></td><td>17 回の中央値（$0.02〜$0.20）</td></tr>
+      </tbody>
+    </table>
+    <p style="margin-top:16px"><strong>1回目だけ高いのはプロンプトキャッシュが効いていないため</strong>です。
+    起動したまま使い続けるほど安くなるので、こまめに再起動しないほうが得です。</p>
+    <p class="sub">※ すべて作者の環境での実測値です。<strong>あなたの請求額を保証するものではありません。</strong>
+    作業の内容と対象リポジトリの大きさで変わります。</p>
+
+    <h3>高いと感じたら</h3>
+    <ul>
+      <li><strong>会話係を軽量モデルに切り替える</strong>（画面のヘッダーから。単価が約3分の1になります）</li>
+      <li>起動したまま使う（再起動するたびに1回目の値段に戻ります）</li>
+      <li>長引いていると感じたら「中断」と言う</li>
+    </ul>
+    <p class="sub">かかった額は画面の上にその場で出ます。単価を確かめていないモデルでは<strong>金額を空欄にします</strong>（推測の数字を出さないため）。</p>
+  </div>
+
+  <div class="card">
+    <div class="kicker">TROUBLE — 困ったとき</div>
+    <h2>まず doctor を打つ</h2>
+    <div class="copybox">
+      <button class="copy-btn" onclick="const t=this.parentElement.querySelector('code').innerText;navigator.clipboard.writeText(t);this.textContent='✓ コピーしました';this.classList.add('done');const b=this;setTimeout(()=>{b.textContent='📋 コピー';b.classList.remove('done')},1800)">📋 コピー</button>
+      <pre><code>pnpm run doctor</code></pre>
+    </div>
+    <table style="margin-top:18px">
+      <thead><tr><th>症状</th><th>見るところ</th></tr></thead>
+      <tbody>
+        <tr><td>声が出ない・つながらない</td><td><code>.env</code> の <code>OPENAI_API_KEY</code>。<code>gpt-realtime</code> が使えるアカウントか</td></tr>
+        <tr><td>マイクが使えない</td><td>ブラウザのマイク許可。再読み込み直後は一度画面に触れる必要があります</td></tr>
+        <tr><td>作業が始まらない</td><td>「作業は始めていません」の表示が出ていないか（上の SAFETY）</td></tr>
+        <tr><td>ポートが使われている</td><td>8787（サーバ）と 5173（画面）を使います</td></tr>
+        <tr><td><code>pnpm doctor</code> が何も出さない</td><td><code>pnpm run doctor</code> と打つ</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card">
+    <div class="kicker">OPTIONAL — 慣れてきたら</div>
+    <h2>できることを広げる</h2>
+    <h3>手元の資料を引かせる</h3>
+    <p><code>docs/</code> に <code>.md</code> <code>.txt</code> <code>.pdf</code> を置いて索引を作ると、会話の中で引けるようになります。</p>
+    <div class="copybox">
+      <button class="copy-btn" onclick="const t=this.parentElement.querySelector('code').innerText;navigator.clipboard.writeText(t);this.textContent='✓ コピーしました';this.classList.add('done');const b=this;setTimeout(()=>{b.textContent='📋 コピー';b.classList.remove('done')},1800)">📋 コピー</button>
+      <pre><code>pnpm rag:index</code></pre>
+    </div>
+    <p style="margin-top:14px">資料に無いことは「資料には見つかりませんでした」と返り、<strong>それらしい答えを作りません</strong>。
+    鍵や資格情報らしい名前（<code>.env*</code> <code>id_rsa*</code> <code>*.pem</code> <code>credentials*</code>）は、
+    <strong>中身を読む前に</strong>索引から外れます。</p>
+
+    <h3>別のリポジトリで使う</h3>
+    <div class="copybox">
+      <button class="copy-btn" onclick="const t=this.parentElement.querySelector('code').innerText;navigator.clipboard.writeText(t);this.textContent='✓ コピーしました';this.classList.add('done');const b=this;setTimeout(()=>{b.textContent='📋 コピー';b.classList.remove('done')},1800)">📋 コピー</button>
+      <pre><code># .env
+VOICE_AGENT_WORKSPACE=/path/to/your/repo</code></pre>
+    </div>
+    <p style="margin-top:14px">複数を同時に開くこともできます（「packages/web も開いて」）。
+    画面に半透明のターミナルが並び、話しかけている相手だけ縁が光ります。</p>
+
+    <h3>アバターを出す</h3>
+    <p>既定は計器表示です。VRM モデルを使いたい場合は <code>packages/web/public/avatar.vrm</code> に置いて、
+    <code>voiceagent.config.json</code> の <code>avatar.kind</code> を <code>"vrm"</code> にしてください。
+    <strong>置いただけでは切り替わりません</strong>（「置く」と「使う」を分けてあります）。</p>
+  </div>
+
+  <div class="card">
+    <div class="kicker">TERMS — このソフトの扱い</div>
+    <h2>再配布はできません</h2>
+    <p>メンバーシップ加入者向けの配布物です。<strong>受け取った本人が使う・改変するのは自由ですが、
+    再配布・転載・販売はできません</strong>（改変したものも同じ）。解約後も、受け取った版はそのまま使い続けられます。</p>
+    <p>同梱の <code>LICENSE</code> に条項があります。とくに<strong>免責</strong>には目を通してください
+    —— このソフトは声での指示にもとづいて、Claude Code にファイルの読み書きとコマンドの実行をさせるものです。
+    <strong>重要なデータはバックアップを取り、バージョン管理された作業フォルダで使ってください。</strong></p>
+  </div>
+
+  <footer style="text-align:center;padding:32px 0;color:var(--ink-faint);font-size:13px">
+    voice-agent v0.1.0 — メンバー限定配布 / 2026-08-07
+  </footer>
+
+</div>
+</body>
+</html>

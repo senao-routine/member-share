@@ -8,6 +8,7 @@
 
 | 公開日 | タイトル | URL |
 |---|---|---|
+| 2026-08-09 | [voice-agent 導入編｜受け取ってから、声で開発が始まるまで](https://senao-routine.github.io/member-share/20260809VoiceAgentSetup-gd1f5v.html) | https://senao-routine.github.io/member-share/20260809VoiceAgentSetup-gd1f5v.html |
 | 2026-08-07 | [声で Claude Code を動かす — 導入ガイド](https://senao-routine.github.io/member-share/20260807_voice-agent-junow0.html) | https://senao-routine.github.io/member-share/20260807_voice-agent-junow0.html |
 | 2026-08-05 | [ビジネスAI講座 第1回 — 僕がAIで作った5つの収入源](https://senao-routine.github.io/member-share/20260805%E3%83%93%E3%82%B8%E3%83%8D%E3%82%B9AI%E8%AC%9B%E5%BA%A701-g6noc5.html) | https://senao-routine.github.io/member-share/20260805%E3%83%93%E3%82%B8%E3%83%8D%E3%82%B9AI%E8%AC%9B%E5%BA%A701-g6noc5.html |
 | 2026-07-27 | [スライドキャストキット — メンバー限定配布のご案内](https://senao-routine.github.io/member-share/slidecast-kit-874osg.html) | https://senao-routine.github.io/member-share/slidecast-kit-874osg.html |
